@@ -21,43 +21,33 @@ class TetrisEngine {
 		self.well = TetrisWell()
 		self.scene = TetrisScene(scene, center, well)
 		self.state = .random(well.width, well.height)
-		self.timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-			self.dropDown()
-		}
 		self.scene.show(state)
+		startTimer()
 	}
 	
-	func rotate() {
-		trySetState(state.rotate())
-	}
+	func rotate() { setState(state.rotate()) }
 	
-	func moveLeft() {
-		trySetState(state.left())
-	}
+	func left() { setState(state.left()) }
 	
-	func moveRight() {
-		trySetState(state.right())
-	}
+	func right() { setState(state.right()) }
 	
-	func fallDown() {
+	func drop() {
+		stopTimer()
+		let initial = state
 		while(!well.hasCollision(state.down())) {
 			state = state.down()
 		}
-		mergeWell()
+		let time = scene.drop(delta: initial.y - state.y, max: well.height)
+		Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
+			self.startTimer()
+			self.mergeWell()
+		}
 	}
 	
-	@discardableResult private func trySetState(_ state: TetrisState) -> Bool {
+	private func setState(_ state: TetrisState) {
 		if (!well.hasCollision(state)) {
 			self.state = state
 			scene.show(state)
-			return true
-		}
-		return false
-	}
-	
-	private func dropDown() {
-		if (!trySetState(state.down())) {
-			mergeWell()
 		}
 	}
 	
@@ -65,16 +55,44 @@ class TetrisEngine {
 		well.merge(state)
 		scene.merge(state)
 		
-		scene.removeRows(well.clearRows())
-		
+		let rows = well.clearRows()
+		if (rows.isEmpty) {
+			nextTetromino()
+		} else {
+			self.stopTimer()
+			let time = scene.removeRows(rows)
+			Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
+				self.startTimer()
+				self.nextTetromino()
+			}
+		}
+	}
+	
+	private func nextTetromino() {
 		state = .random(well.width, well.height)
 		if (well.hasCollision(state)) {
-			self.timer?.invalidate()
-			self.timer = nil
+			stopTimer()
 			scene.destroy()
 		} else {
 			scene.show(state)
 		}
+	}
+	
+	private func startTimer() {
+		self.timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+			let down = self.state.down()
+			if (self.well.hasCollision(down)) {
+				self.state = down
+				self.scene.show(self.state)
+			} else {
+				self.mergeWell()
+			}
+		}
+	}
+	
+	private func stopTimer() {
+		timer?.invalidate()
+		timer = nil
 	}
 	
 }

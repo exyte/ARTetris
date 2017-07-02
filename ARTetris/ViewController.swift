@@ -86,7 +86,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 	
 	@objc private func handleSwipe(sender: UISwipeGestureRecognizer) {
 		if (sender.direction == .down) {
-			tetris?.fallDown()
+			tetris?.drop()
 		} else {
 			tetris?.rotate()
 		}
@@ -97,9 +97,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 		let size = self.view.bounds.size
 		let x = location.x / size.width
 		if (x < 0.5) {
-			tetris?.moveLeft()
+			tetris?.left()
 		} else {
-			tetris?.moveRight()
+			tetris?.right()
 		}
 	}
 	// MARK: - ARSCNViewDelegate

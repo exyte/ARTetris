@@ -54,18 +54,55 @@ class TetrisScene {
 		}
 	}
 	
-	func removeRows(_ rows: [Int]) {
+	func removeRows(_ rows: [Int]) -> CFTimeInterval {
+		let time = 0.2
+		let opacity = CABasicAnimation(keyPath: "opacity")
+		opacity.fromValue = 1
+		opacity.toValue = 0
+		opacity.duration = time
+		opacity.fillMode = kCAFillModeForwards
+		opacity.isRemovedOnCompletion = false
 		for row in rows {
 			for node in nodesByLines[row] {
-				node.removeFromParentNode()
+				node.addAnimation(opacity, forKey: nil)
 			}
-			for j in row + 1..<nodesByLines.count {
-				for node in nodesByLines[j] {
-					node.transform = SCNMatrix4Translate(node.transform, 0, -cell, 0)
+		}
+		Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
+			for (index, row) in rows.reversed().enumerated() {
+				let nextRow = index + 1 < rows.count ? rows[index + 1] : self.nodesByLines.count
+				if (nextRow > row + 1) {
+					for j in row + 1..<nextRow {
+						for node in self.nodesByLines[j] {
+							let translate = CABasicAnimation(keyPath: "position.y")
+							let y = self.y + Float(j) * self.cell
+							translate.fromValue = y
+							translate.toValue = y - self.cell * Float(index + 1)
+							translate.duration = time
+							translate.fillMode = kCAFillModeForwards
+							translate.isRemovedOnCompletion = false
+							node.addAnimation(translate, forKey: nil)
+						}
+					}
 				}
 			}
-			nodesByLines.remove(at: row)
+			for row in rows {
+				for node in self.nodesByLines[row] {
+					node.removeFromParentNode()
+				}
+				self.nodesByLines.remove(at: row)
+			}
 		}
+		return time * 2
+	}
+	
+	func drop(delta: Int, max: Int) -> CFTimeInterval {
+		let move = CABasicAnimation(keyPath: "position.y")
+		move.fromValue = 0
+		move.toValue = Float(-delta) * cell
+		let percent = Double(delta - 1) / Double(max - 1)
+		move.duration = percent * 0.3 + 0.1
+		recent.addAnimation(move, forKey: nil)
+		return move.duration
 	}
 	
 	func destroy() {
