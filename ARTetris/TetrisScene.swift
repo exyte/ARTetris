@@ -68,6 +68,7 @@ class TetrisScene {
 			}
 		}
 		Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
+			self.addScores(rows.count, rows.first!)
 			for (index, row) in rows.reversed().enumerated() {
 				let nextRow = index + 1 < rows.count ? rows[index + 1] : self.nodesByLines.count
 				if (nextRow > row + 1) {
@@ -117,6 +118,50 @@ class TetrisScene {
 				item.physicsBody?.angularDamping = 0.9
 				item.physicsBody?.applyForce(direction, asImpulse: true)
 			}
+		}
+	}
+	
+	private func addScores(_ rows: Int, _ row: Int) {
+		let text = SCNText(string: "+\(self.getScores(rows))", extrusionDepth: 1)
+		text.font = UIFont.systemFont(ofSize: 20)
+		let textNode = SCNNode(geometry: text)
+		
+		let material = SCNMaterial()
+		material.diffuse.contents = UIColor.white
+		text.materials = [material, material, material, material]
+		
+		let y = Float(row) * self.cell
+		textNode.transform = SCNMatrix4Scale(SCNMatrix4Translate(self.translate(0, 0), 5 * cell, y, 2 * cell), 0.001, 0.001, 0.001)
+		
+		let translate = CABasicAnimation(keyPath: "position.y")
+		translate.fromValue = textNode.transform.m42
+		translate.toValue = textNode.transform.m42 + cell * 4
+		translate.duration = 2
+		translate.fillMode = kCAFillModeForwards
+		translate.isRemovedOnCompletion = false
+		textNode.addAnimation(translate, forKey: nil)
+		
+		let opacity = CABasicAnimation(keyPath: "opacity")
+		opacity.fromValue = 1
+		opacity.toValue = 0
+		opacity.duration = 2
+		opacity.fillMode = kCAFillModeForwards
+		opacity.isRemovedOnCompletion = false
+		textNode.addAnimation(opacity, forKey: nil)
+		
+		self.scene.rootNode.addChildNode(textNode)
+	}
+	
+	private func getScores(_ rows: Int) -> Int {
+		switch rows {
+		case 1:
+			return 100
+		case 2:
+			return 300
+		case 3:
+			return 500
+		default:
+			return 800
 		}
 	}
 	
