@@ -82,10 +82,10 @@ class TetrisEngine {
 		self.timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
 			let down = self.state.down()
 			if (self.well.hasCollision(down)) {
+				self.mergeWell()
+			} else {
 				self.state = down
 				self.scene.show(self.state)
-			} else {
-				self.mergeWell()
 			}
 		}
 	}
