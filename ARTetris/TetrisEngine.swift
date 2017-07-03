@@ -9,70 +9,77 @@
 import Foundation
 import SceneKit
 
+/** Tetris game enigne */
 class TetrisEngine {
 	
+	let config: TetrisConfig
 	let well: TetrisWell
 	let scene: TetrisScene
 	
-	var state: TetrisState
+	var current: TetrisState
 	var timer: Timer?
 	var scores = 0
 	
-	init(_ scene: SCNScene, _ center: SCNVector3) {
-		self.well = TetrisWell()
-		self.scene = TetrisScene(scene, center, well)
-		self.state = .random(well.width, well.height)
-		self.scene.show(state)
+	init(_ config: TetrisConfig, _ well: TetrisWell, _ scene: TetrisScene) {
+		self.config = config
+		self.well = well
+		self.scene = scene
+		self.current = .random(config)
+		self.scene.show(current)
 		startTimer()
 	}
 	
-	func rotate() { setState(state.rotate()) }
+	func rotate() { setState(current.rotate()) }
 	
-	func left() { setState(state.left()) }
+	func left() { setState(current.left()) }
 	
-	func right() { setState(state.right()) }
+	func right() { setState(current.right()) }
 	
 	func drop() {
-		stopTimer()
-		let initial = state
-		while(!well.hasCollision(state.down())) {
-			state = state.down()
-		}
-		let time = scene.drop(delta: initial.y - state.y, max: well.height)
-		Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
-			self.startTimer()
-			self.mergeWell()
+		animate(onComplete: addCurrentTetrominoToWell) {
+			let initial = current
+			while(!well.hasCollision(current.down())) {
+				current = current.down()
+			}
+			return scene.drop(initial.y - current.y)
 		}
 	}
 	
 	private func setState(_ state: TetrisState) {
 		if (!well.hasCollision(state)) {
-			self.state = state
+			self.current = state
 			scene.show(state)
 		}
 	}
 	
-	private func mergeWell() {
-		well.merge(state)
-		scene.merge(state)
+	private func addCurrentTetrominoToWell() {
+		well.add(current)
+		scene.addToWell(current)
 		
-		let rows = well.clearRows()
-		if (rows.isEmpty) {
+		let lines = well.clearFilledLines()
+		if (lines.isEmpty) {
 			nextTetromino()
 		} else {
-			self.stopTimer()
-			let scores = getScores(rows.count)
-			self.scores += scores
-			let time = scene.removeRows(rows, scores)
-			Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
-				self.startTimer()
-				self.nextTetromino()
+			animate(onComplete: nextTetromino) {
+				let scores = getScores(lines.count)
+				self.scores += scores
+				return scene.removeLines(lines, scores)
 			}
 		}
 	}
 	
-	private func getScores(_ rows: Int) -> Int {
-		switch rows {
+	private func nextTetromino() {
+		current = .random(config)
+		if (well.hasCollision(current)) {
+			stopTimer()
+			scene.showGameOver(scores)
+		} else {
+			scene.show(current)
+		}
+	}
+	
+	private func getScores(_ lineCount: Int) -> Int {
+		switch lineCount {
 		case 1:
 			return 100
 		case 2:
@@ -84,24 +91,22 @@ class TetrisEngine {
 		}
 	}
 	
-	private func nextTetromino() {
-		state = .random(well.width, well.height)
-		if (well.hasCollision(state)) {
-			stopTimer()
-			scene.destroy(self.scores)
-		} else {
-			scene.show(state)
+	private func animate(onComplete: @escaping () -> Void, block: () -> CFTimeInterval) {
+		self.stopTimer()
+		Timer.scheduledTimer(withTimeInterval: block(), repeats: false) { _ in
+			self.startTimer()
+			onComplete()
 		}
 	}
 	
 	private func startTimer() {
 		self.timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-			let down = self.state.down()
+			let down = self.current.down()
 			if (self.well.hasCollision(down)) {
-				self.mergeWell()
+				self.addCurrentTetrominoToWell()
 			} else {
-				self.state = down
-				self.scene.show(self.state)
+				self.current = down
+				self.scene.show(self.current)
 			}
 		}
 	}

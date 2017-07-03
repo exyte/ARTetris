@@ -8,10 +8,11 @@
 
 import Foundation
 
+/** Tetris game state: current tetromino and its position in the well */
 class TetrisState {
 	
-	static func random(_ width: Int, _ height: Int) -> TetrisState {
-		return TetrisState(random(OneSidedTetromino.all.count), random(4), width / 2, height)
+	static func random(_ config: TetrisConfig) -> TetrisState {
+		return TetrisState(random(OneSidedTetromino.all.count), random(4), config.width / 2, config.height)
 	}
 	
 	let index: Int

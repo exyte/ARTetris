@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		581A9D861F065AB1003ABB79 /* TetrisEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 581A9D851F065AB1003ABB79 /* TetrisEngine.swift */; };
+		581A9D881F0AA04F003ABB79 /* TetrisConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 581A9D871F0AA04F003ABB79 /* TetrisConfig.swift */; };
 		589A2D111F02417D003BB05E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 589A2D101F02417D003BB05E /* AppDelegate.swift */; };
 		589A2D151F02417D003BB05E /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 589A2D141F02417D003BB05E /* ViewController.swift */; };
 		589A2D181F02417D003BB05E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 589A2D161F02417D003BB05E /* Main.storyboard */; };
@@ -21,6 +22,7 @@
 
 /* Begin PBXFileReference section */
 		581A9D851F065AB1003ABB79 /* TetrisEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TetrisEngine.swift; sourceTree = "<group>"; };
+		581A9D871F0AA04F003ABB79 /* TetrisConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TetrisConfig.swift; sourceTree = "<group>"; };
 		589A2D0D1F02417D003BB05E /* ARTetris.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ARTetris.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		589A2D101F02417D003BB05E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		589A2D141F02417D003BB05E /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -75,6 +77,7 @@
 				58C1385E1F05680E0080598A /* TetrisScene.swift */,
 				58C138601F059B800080598A /* TetrisState.swift */,
 				581A9D851F065AB1003ABB79 /* TetrisEngine.swift */,
+				581A9D871F0AA04F003ABB79 /* TetrisConfig.swift */,
 			);
 			path = ARTetris;
 			sourceTree = "<group>";
@@ -156,6 +159,7 @@
 				58C1385F1F05680E0080598A /* TetrisScene.swift in Sources */,
 				589A2D111F02417D003BB05E /* AppDelegate.swift in Sources */,
 				58C138611F059B800080598A /* TetrisState.swift in Sources */,
+				581A9D881F0AA04F003ABB79 /* TetrisConfig.swift in Sources */,
 				581A9D861F065AB1003ABB79 /* TetrisEngine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

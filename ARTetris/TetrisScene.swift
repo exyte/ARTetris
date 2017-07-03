@@ -11,9 +11,9 @@ import SceneKit
 
 class TetrisScene {
 	
-	let cell : Float = 0.05
+	private let cell: Float = 0.05
 	
-	let colors : [UIColor] = [
+	private let colors : [UIColor] = [
 		UIColor(red:1.00, green:0.23, blue:0.19, alpha:1.0),
 		UIColor(red:1.00, green:0.18, blue:0.33, alpha:1.0),
 		UIColor(red:1.00, green:0.58, blue:0.00, alpha:1.0),
@@ -22,45 +22,47 @@ class TetrisScene {
 		UIColor(red:0.20, green:0.67, blue:0.86, alpha:1.0),
 		UIColor(red:0.56, green:0.56, blue:0.58, alpha:1.0)]
 	
-	let wellColor = UIColor.black
-	let scoresColor = UIColor(red:0.30, green:0.85, blue:0.39, alpha:1.0)
-	let titleColor = UIColor(red:0.35, green:0.34, blue:0.84, alpha:1.0)
+	private let wellColor = UIColor.black
+	private let scoresColor = UIColor(red:0.30, green:0.85, blue:0.39, alpha:1.0)
+	private let titleColor = UIColor(red:0.35, green:0.34, blue:0.84, alpha:1.0)
 	
-	let scene: SCNScene
-	let x: Float
-	let y: Float
-	let z: Float
+	private let config: TetrisConfig
+	private let scene: SCNScene
+	private let x: Float
+	private let y: Float
+	private let z: Float
 	
-	var nodesByLines: [[SCNNode]] = []
-	var recent: SCNNode!
-	var well: SCNNode!
+	private var nodesByLines: [[SCNNode]] = []
+	private var recent: SCNNode!
+	private var well: SCNNode!
 	
-	init(_ scene: SCNScene, _ center: SCNVector3, _ well: TetrisWell) {
+	init(_ config: TetrisConfig, _ scene: SCNScene, _ x: Float, _ y: Float, _ z: Float) {
+		self.config = config
 		self.scene = scene
-		self.x = center.x
-		self.y = center.y
-		self.z = center.z
-		self.well = self.addMarkers(well.width, well.height)
+		self.x = x
+		self.y = y
+		self.z = z
+		self.well = self.addMarkers(config.width, config.height)
 		scene.rootNode.addChildNode(self.well)
 	}
 	
-	func show(_ state: TetrisState) {
+	func show(_ current: TetrisState) {
 		recent?.removeFromParentNode()
 		recent = SCNNode()
-		let tetromino = state.tetromino()
+		let tetromino = current.tetromino()
 		for i in 0...3 {
-			recent.addChildNode(newBox(state, tetromino.x(i), tetromino.y(i)))
+			recent.addChildNode(newBox(current, tetromino.x(i), tetromino.y(i)))
 		}
 		scene.rootNode.addChildNode(recent)
 	}
 	
-	func merge(_ state: TetrisState) {
+	func addToWell(_ current: TetrisState) {
 		recent?.removeFromParentNode()
-		let tetromino = state.tetromino()
+		let tetromino = current.tetromino()
 		for i in 0...3 {
-			let box = newBox(state, tetromino.x(i), tetromino.y(i))
+			let box = newBox(current, tetromino.x(i), tetromino.y(i))
 			scene.rootNode.addChildNode(box)
-			let row = tetromino.y(i) + state.y
+			let row = tetromino.y(i) + current.y
 			while(nodesByLines.count <= row) {
 				nodesByLines.append([])
 			}
@@ -68,7 +70,7 @@ class TetrisScene {
 		}
 	}
 	
-	func removeRows(_ rows: [Int], _ scores: Int) -> CFTimeInterval {
+	func removeLines(_ lines: [Int], _ scores: Int) -> CFTimeInterval {
 		let time = 0.2
 		let opacity = CABasicAnimation(keyPath: "opacity")
 		opacity.fromValue = 1
@@ -76,15 +78,15 @@ class TetrisScene {
 		opacity.duration = time
 		opacity.fillMode = kCAFillModeForwards
 		opacity.isRemovedOnCompletion = false
-		for row in rows {
+		for row in lines {
 			for node in nodesByLines[row] {
 				node.addAnimation(opacity, forKey: nil)
 			}
 		}
 		Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
-			self.addScores(rows.first!, scores)
-			for (index, row) in rows.reversed().enumerated() {
-				let nextRow = index + 1 < rows.count ? rows[index + 1] : self.nodesByLines.count
+			self.addScores(lines.first!, scores)
+			for (index, row) in lines.reversed().enumerated() {
+				let nextRow = index + 1 < lines.count ? lines[index + 1] : self.nodesByLines.count
 				if (nextRow > row + 1) {
 					for j in row + 1..<nextRow {
 						for node in self.nodesByLines[j] {
@@ -100,7 +102,7 @@ class TetrisScene {
 					}
 				}
 			}
-			for row in rows {
+			for row in lines {
 				for node in self.nodesByLines[row] {
 					node.removeFromParentNode()
 				}
@@ -110,17 +112,17 @@ class TetrisScene {
 		return time * 2
 	}
 	
-	func drop(delta: Int, max: Int) -> CFTimeInterval {
+	func drop(_ delta: Int) -> CFTimeInterval {
 		let move = CABasicAnimation(keyPath: "position.y")
 		move.fromValue = 0
 		move.toValue = Float(-delta) * cell
-		let percent = Double(delta - 1) / Double(max - 1)
+		let percent = Double(delta - 1) / Double(config.height - 1)
 		move.duration = percent * 0.3 + 0.1
 		recent.addAnimation(move, forKey: nil)
 		return move.duration
 	}
 	
-	func destroy(_ scores: Int) {
+	func showGameOver(_ scores: Int) {
 		self.well.removeFromParentNode()
 		addFloor()
 		scene.physicsWorld.gravity = SCNVector3Make(0, -2, 0)

@@ -6,8 +6,7 @@
 //  Copyright © 2017 Exyte. All rights reserved.
 //
 
-import Foundation
-
+/** All one sided tetrominos and their rotations */
 class OneSidedTetromino {
 	
 	static let all = [i, j, l, o, s, t, z]
@@ -54,6 +53,7 @@ class OneSidedTetromino {
 	init(_ fixed: [FixedTetromino]) { self.fixed = fixed }
 }
 
+/** Fixed tetromino defined as a list of 4 points (8 integers) */
 class FixedTetromino {
 	
 	let values: [Int]

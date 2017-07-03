@@ -6,19 +6,17 @@
 //  Copyright © 2017 Exyte. All rights reserved.
 //
 
-import Foundation
-
+/** Tetris well model */
 class TetrisWell {
 	
-	let width = 10
-	let height = 20
-	
-	var matrix: [[Bool]] = []
+	private let config: TetrisConfig
+	private var matrix: [[Bool]] = []
 
-	init() {
-		matrix.append([Bool](repeating: true, count: width + 2))
-		for _ in 0...height+3 {
-			addWellRow()
+	init(_ config: TetrisConfig) {
+		self.config = config
+		matrix.append([Bool](repeating: true, count: config.width + 2))
+		for _ in 0...config.height + 3 {
+			addLine()
 		}
 	}
 	
@@ -32,17 +30,17 @@ class TetrisWell {
 		return false
 	}
 	
-	public func merge(_ state: TetrisState) {
-		let tetromino = state.tetromino()
+	public func add(_ current: TetrisState) {
+		let tetromino = current.tetromino()
 		for i in 0...3 {
-			matrix[state.y + tetromino.y(i)][state.x + tetromino.x(i)] = true
+			matrix[current.y + tetromino.y(i)][current.x + tetromino.x(i)] = true
 		}
 	}
 	
-	public func clearRows() -> [Int] {
+	public func clearFilledLines() -> [Int] {
 		var toRemove: [Int] = []
-		loop: for i in 1...height+1 {
-			for j in 1...width {
+		loop: for i in 1...config.height + 1 {
+			for j in 1...config.width {
 				if (!matrix[i][j]) {
 					continue loop
 				}
@@ -52,15 +50,15 @@ class TetrisWell {
 		toRemove.reverse()
 		for i in toRemove {
 			matrix.remove(at: i)
-			addWellRow()
+			addLine()
 		}
 		return toRemove
 	}
 	
-	private func addWellRow() {
-		var row = [Bool](repeating: false, count: width + 2)
+	private func addLine() {
+		var row = [Bool](repeating: false, count: config.width + 2)
 		row[0] = true
-		row[width + 1] = true
+		row[config.width + 1] = true
 		matrix.append(row)
 	}
 	
