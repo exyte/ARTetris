@@ -12,7 +12,19 @@ import SceneKit
 class TetrisScene {
 	
 	let cell : Float = 0.05
-	let colors : [UIColor] = [.cyan, .blue, .orange, .yellow, .green, .purple, .red]
+	
+	let colors : [UIColor] = [
+		UIColor(red:1.00, green:0.23, blue:0.19, alpha:1.0),
+		UIColor(red:1.00, green:0.18, blue:0.33, alpha:1.0),
+		UIColor(red:1.00, green:0.58, blue:0.00, alpha:1.0),
+		UIColor(red:1.00, green:0.80, blue:0.00, alpha:1.0),
+		UIColor(red:0.35, green:0.34, blue:0.84, alpha:1.0),
+		UIColor(red:0.20, green:0.67, blue:0.86, alpha:1.0),
+		UIColor(red:0.56, green:0.56, blue:0.58, alpha:1.0)]
+	
+	let wellColor = UIColor.black
+	let scoresColor = UIColor(red:0.30, green:0.85, blue:0.39, alpha:1.0)
+	let titleColor = UIColor(red:0.35, green:0.34, blue:0.84, alpha:1.0)
 	
 	let scene: SCNScene
 	let x: Float
@@ -21,13 +33,15 @@ class TetrisScene {
 	
 	var nodesByLines: [[SCNNode]] = []
 	var recent: SCNNode!
+	var well: SCNNode!
 	
 	init(_ scene: SCNScene, _ center: SCNVector3, _ well: TetrisWell) {
 		self.scene = scene
 		self.x = center.x
 		self.y = center.y
 		self.z = center.z
-		addMarkers(well.width)
+		self.well = self.addMarkers(well.width, well.height)
+		scene.rootNode.addChildNode(self.well)
 	}
 	
 	func show(_ state: TetrisState) {
@@ -54,7 +68,7 @@ class TetrisScene {
 		}
 	}
 	
-	func removeRows(_ rows: [Int]) -> CFTimeInterval {
+	func removeRows(_ rows: [Int], _ scores: Int) -> CFTimeInterval {
 		let time = 0.2
 		let opacity = CABasicAnimation(keyPath: "opacity")
 		opacity.fromValue = 1
@@ -68,7 +82,7 @@ class TetrisScene {
 			}
 		}
 		Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
-			self.addScores(rows.count, rows.first!)
+			self.addScores(rows.first!, scores)
 			for (index, row) in rows.reversed().enumerated() {
 				let nextRow = index + 1 < rows.count ? rows[index + 1] : self.nodesByLines.count
 				if (nextRow > row + 1) {
@@ -106,7 +120,8 @@ class TetrisScene {
 		return move.duration
 	}
 	
-	func destroy() {
+	func destroy(_ scores: Int) {
+		self.well.removeFromParentNode()
 		addFloor()
 		scene.physicsWorld.gravity = SCNVector3Make(0, -2, 0)
 		for i in 0..<nodesByLines.count {
@@ -119,15 +134,19 @@ class TetrisScene {
 				item.physicsBody?.applyForce(direction, asImpulse: true)
 			}
 		}
+		Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
+			self.addEndText(2, "Scores: \(scores)")
+		}
 	}
 	
-	private func addScores(_ rows: Int, _ row: Int) {
-		let text = SCNText(string: "+\(self.getScores(rows))", extrusionDepth: 1)
+	private func addScores(_ row: Int, _ scores: Int) {
+		let text = SCNText(string: "+\(scores)", extrusionDepth: 1)
 		text.font = UIFont.systemFont(ofSize: 20)
 		let textNode = SCNNode(geometry: text)
 		
 		let material = SCNMaterial()
-		material.diffuse.contents = UIColor.white
+		
+		material.diffuse.contents = scoresColor
 		text.materials = [material, material, material, material]
 		
 		let y = Float(row) * self.cell
@@ -152,23 +171,38 @@ class TetrisScene {
 		self.scene.rootNode.addChildNode(textNode)
 	}
 	
-	private func getScores(_ rows: Int) -> Int {
-		switch rows {
-		case 1:
-			return 100
-		case 2:
-			return 300
-		case 3:
-			return 500
-		default:
-			return 800
-		}
+	private func addEndText(_ row: Int, _ text: String) {
+		let text = SCNText(string: text, extrusionDepth: 1)
+		text.font = UIFont.systemFont(ofSize: 20)
+		text.containerFrame = CGRect(x: 0.0, y: 0.0, width: Double(10 * cell / 0.003), height: 150)
+		text.alignmentMode = kCAAlignmentCenter
+		let textNode = SCNNode(geometry: text)
+		
+		let material = SCNMaterial()
+		material.diffuse.contents = titleColor
+		text.materials = [material, material, material, material]
+		
+		let y = Float(row) * self.cell
+		textNode.transform = SCNMatrix4Scale(SCNMatrix4Translate(self.translate(0, 0), 3 * cell, y, 0), 0.003, 0.003, 0.003)
+		self.scene.rootNode.addChildNode(textNode)
 	}
 	
-	private func addMarkers(_ width: Int) {
-		for i in 1...width {
-			addMarker(i, 0)
+	private func addMarkers(_ width: Int, _ height: Int) -> SCNNode {
+		let node = SCNNode()
+		for i in 1...width + 1 {
+			node.addChildNode(addLine(0.001, CGFloat(cell * Float(height+3)), 0.001, i, 0, 0))
+			node.addChildNode(addLine(0.001, CGFloat(cell * Float(height+3)), 0.001, i, 0, 1))
 		}
+		for i in 0...height+3 {
+			node.addChildNode(addLine(CGFloat(cell * Float(width)), 0.001, 0.001, 1, i, 0))
+			node.addChildNode(addLine(CGFloat(cell * Float(width)), 0.001, 0.001, 1, i, 1))
+		}
+		for i in 1...width + 1 {
+			for j in 0...height+3 {
+				node.addChildNode(addLine(0.001, 0.001, CGFloat(cell), i, j, 1))
+			}
+		}
+		return node
 	}
 	
 	private func newBox(_ state: TetrisState, _ x: Int, _ y: Int) -> SCNNode {
@@ -179,6 +213,24 @@ class TetrisScene {
 		let material = SCNMaterial()
 		material.diffuse.contents = colors[state.index]
 		box.materials = [material, material, material, material, material, material]
+		return node
+	}
+	
+	private func addLine(_ w: CGFloat, _ h: CGFloat, _ l: CGFloat, _ x: Int, _ y: Int, _ z: Int) -> SCNNode {
+		let box = SCNBox(width: w, height: h, length: l, chamferRadius: 0)
+		let node = SCNNode(geometry: box)
+		
+		let material = SCNMaterial()
+		material.diffuse.contents = wellColor
+		material.transparency = 0.3
+		box.materials = [material, material, material, material, material, material, material, material]
+		
+		// SCNPlanes are vertically oriented in their local coordinate space.
+		// Rotate it to match the horizontal orientation of the ARPlaneAnchor.
+		let shift = cell / Float(2)
+		node.transform = SCNMatrix4Translate(translate(0, 0), cell * Float(x) + Float(w / CGFloat(2)) - shift, cell * Float(y) + Float(h / CGFloat(2)), cell * Float(z) + Float(-l / CGFloat(2)) - shift)
+		
+		// ARKit owns the node corresponding to the anchor, so make the plane a child node.
 		return node
 	}
 	

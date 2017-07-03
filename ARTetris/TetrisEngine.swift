@@ -16,6 +16,7 @@ class TetrisEngine {
 	
 	var state: TetrisState
 	var timer: Timer?
+	var scores = 0
 	
 	init(_ scene: SCNScene, _ center: SCNVector3) {
 		self.well = TetrisWell()
@@ -60,7 +61,9 @@ class TetrisEngine {
 			nextTetromino()
 		} else {
 			self.stopTimer()
-			let time = scene.removeRows(rows)
+			let scores = getScores(rows.count)
+			self.scores += scores
+			let time = scene.removeRows(rows, scores)
 			Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
 				self.startTimer()
 				self.nextTetromino()
@@ -68,11 +71,24 @@ class TetrisEngine {
 		}
 	}
 	
+	private func getScores(_ rows: Int) -> Int {
+		switch rows {
+		case 1:
+			return 100
+		case 2:
+			return 300
+		case 3:
+			return 500
+		default:
+			return 800
+		}
+	}
+	
 	private func nextTetromino() {
 		state = .random(well.width, well.height)
 		if (well.hasCollision(state)) {
 			stopTimer()
-			scene.destroy()
+			scene.destroy(self.scores)
 		} else {
 			scene.show(state)
 		}
