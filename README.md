@@ -14,13 +14,13 @@ Augmented Reality Tetris made with ARKit and SceneKit
 * [TetrisState](/ARTetris/TetrisState.swift): tetris game state - current tetromino and its position in the well
 * [TetrisWell](/ARTetris/TetrisWell.swift): well model describing filled cells
 * [TetrisEngine](/ARTetris/TetrisEngine.swift): tetris game engine
-  * [Start](/ARTetris/TetrisEngine.swift#102) game loop
-  * [Handle](/ARTetris/TetrisEngine.swift#32) gestures and change game state
-  * [Handle animation](/ARTetris/TetrisEngine.swift#94): stop game loop, execute animation, start game loop
+  * [Start](/ARTetris/TetrisEngine.swift#L102) game loop
+  * [Handle](/ARTetris/TetrisEngine.swift#L32) gestures and change game state
+  * [Handle animation](/ARTetris/TetrisEngine.swift#L94): stop game loop, execute animation, start game loop
 * [TetrisScene](/ARTetris/TetrisScene.swift)
-  * Create (addMarkers) well scene
-  * Show (show) current tetromino
-  * Split (addToWell) current tetromino to lines
-  * Remove (removeLines) filled lines from scene
-  * Drop down (drop) current tetromino
-  * Break up blocks after game over using SceneKit physics
+  * [Create](/ARTetris/TetrisScene.swift#L163) well frame
+  * [Show](/ARTetris/TetrisScene.swift#L50) current tetromino
+  * [Split](/ARTetris/TetrisScene.swift#L60) current tetromino into blocks and add to well
+  * Animate [removal](/ARTetris/TetrisScene.swift#L74) of filled lines from scene
+  * [Drop down](/ARTetris/TetrisScene.swift#L108) current tetromino
+  * [Break up](/ARTetris/TetrisScene.swift#L117) blocks after game over using SceneKit physics
