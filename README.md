@@ -34,4 +34,4 @@ This project is maintained by the [exyte](http://www.exyte.com) company, a team 
 
 ## License
 
-Macaw is available under the MIT license. See the LICENSE file for more info.
+ARTetris is available under the MIT license. See the LICENSE file for more info.
