@@ -1,7 +1,10 @@
 # ARTetris
-Augmented Reality Tetris made with ARKit and SceneKit
+Augmented Reality Tetris made with ARKit and SceneKit.
 
-[![ARTetris Demo](http://i.imgur.com/BXi949y.jpg)](https://youtu.be/DzYkvbS1nDE)
+# Demo
+Click on the image below and check out the app demo:
+
+<a href="https://youtu.be/DzYkvbS1nDE"><img src="http://i.imgur.com/BXi949y.jpg" width="600"></a>
 
 # Source Code Guide
 
@@ -24,3 +27,11 @@ Augmented Reality Tetris made with ARKit and SceneKit
   * Animate [removal](/ARTetris/TetrisScene.swift#L74) of filled lines from scene
   * [Drop down](/ARTetris/TetrisScene.swift#L108) current tetromino
   * [Break up](/ARTetris/TetrisScene.swift#L117) blocks after game over using SceneKit physics
+
+## Author
+
+This project is maintained by the [exyte](http://www.exyte.com) company, a team of experienced software engineers from the cold Siberia. We don't have bears and don't like vodka, but we love to create great applications! Just [contact us](mailto:info@exyte.com).
+
+## License
+
+Macaw is available under the MIT license. See the LICENSE file for more info.
