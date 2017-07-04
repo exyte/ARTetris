@@ -1,5 +1,5 @@
 //
-//  Tetramino.swift
+//  Tetromino.swift
 //  ARTetris
 //
 //  Created by Yuri Strot on 6/27/17.

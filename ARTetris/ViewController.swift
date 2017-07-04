@@ -15,6 +15,20 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     @IBOutlet var sceneView: ARSCNView!
 	var tetris: TetrisEngine?
 	
+	override func viewDidLoad() {
+		super.viewDidLoad()
+		
+		// Set the view's delegate
+		sceneView.delegate = self
+		
+		// Create a new scene
+		sceneView.scene = SCNScene()
+		// Use default lighting
+		sceneView.autoenablesDefaultLighting = true
+		
+		addGestures()
+	}
+	
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 		// Run the view's session
@@ -27,19 +41,17 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 		sceneView.session.pause()
 	}
 	
-    override func viewDidLoad() {
-        super.viewDidLoad()
-		
-        // Set the view's delegate
-        sceneView.delegate = self
-		
-		// Create a new scene
-		sceneView.scene = SCNScene()
-		// Use default lighting
-		sceneView.autoenablesDefaultLighting = true
-		
-		addGestures()
-    }
+	private func getSessionConfiguration() -> ARSessionConfiguration {
+		if ARWorldTrackingSessionConfiguration.isSupported {
+			// Create a session configuration
+			let configuration = ARWorldTrackingSessionConfiguration()
+			configuration.planeDetection = .horizontal
+			return configuration;
+		} else {
+			// Slightly less immersive AR experience due to lower end processor
+			return ARSessionConfiguration()
+		}
+	}
 	
 	func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
 		// We need async execution to get anchor node's position relative to the root
@@ -58,18 +70,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 					self.tetris = TetrisEngine(config, well, scene)
 				}
 			}
-		}
-	}
-	
-	private func getSessionConfiguration() -> ARSessionConfiguration {
-		if ARWorldTrackingSessionConfiguration.isSupported {
-			// Create a session configuration
-			let configuration = ARWorldTrackingSessionConfiguration()
-			configuration.planeDetection = .horizontal
-			return configuration;
-		} else {
-			// Slightly less immersive AR experience due to lower end processor
-			return ARSessionConfiguration()
 		}
 	}
 	
