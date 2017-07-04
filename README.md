@@ -4,7 +4,7 @@ Augmented Reality Tetris made with ARKit and SceneKit.
 # Demo
 Click on the image below and check out the app demo:
 
-<a href="https://youtu.be/DzYkvbS1nDE"><img src="http://i.imgur.com/BXi949y.jpg" width="600"></a>
+<a href="https://youtu.be/DzYkvbS1nDE" target="_blank"><img src="http://i.imgur.com/BXi949y.jpg" width="600"></a>
 
 # Source Code Guide
 
