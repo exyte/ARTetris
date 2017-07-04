@@ -72,32 +72,21 @@ class TetrisScene {
 	
 	func removeLines(_ lines: [Int], _ scores: Int) -> CFTimeInterval {
 		let time = 0.2
-		let opacity = CABasicAnimation(keyPath: "opacity")
-		opacity.fromValue = 1
-		opacity.toValue = 0
-		opacity.duration = time
-		opacity.fillMode = kCAFillModeForwards
-		opacity.isRemovedOnCompletion = false
 		for row in lines {
 			for node in nodesByLines[row] {
-				node.addAnimation(opacity, forKey: nil)
+				animate(node, "opacity", from: 1, to: 0, during: time)
 			}
 		}
 		Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
-			self.addScores(lines.first!, scores)
+			self.addScores(Float(lines.first!), scores)
 			for (index, row) in lines.reversed().enumerated() {
 				let nextRow = index + 1 < lines.count ? lines[index + 1] : self.nodesByLines.count
 				if (nextRow > row + 1) {
 					for j in row + 1..<nextRow {
 						for node in self.nodesByLines[j] {
-							let translate = CABasicAnimation(keyPath: "position.y")
-							let y = self.y + Float(j) * self.cell
-							translate.fromValue = y
-							translate.toValue = y - self.cell * Float(index + 1)
-							translate.duration = time
-							translate.fillMode = kCAFillModeForwards
-							translate.isRemovedOnCompletion = false
-							node.addAnimation(translate, forKey: nil)
+							let y1 = self.y + Float(j) * self.cell - self.cell / 2
+							let y2 = y1 - self.cell * Float(index + 1)
+							self.animate(node, "position.y", from: y1, to: y2, during: time)
 						}
 					}
 				}
@@ -113,13 +102,10 @@ class TetrisScene {
 	}
 	
 	func drop(_ delta: Int) -> CFTimeInterval {
-		let move = CABasicAnimation(keyPath: "position.y")
-		move.fromValue = 0
-		move.toValue = Float(-delta) * cell
 		let percent = Double(delta - 1) / Double(config.height - 1)
-		move.duration = percent * 0.3 + 0.1
-		recent.addAnimation(move, forKey: nil)
-		return move.duration
+		let time = percent * 0.3 + 0.1
+		animate(recent, "position.y", from: 0, to: Float(-delta) * cell, during: time)
+		return time
 	}
 	
 	func showGameOver(_ scores: Int) {
@@ -132,149 +118,106 @@ class TetrisScene {
 			let direction = SCNVector3Make(x, 0, z)
 			for item in nodesByLines[i] {
 				item.physicsBody = SCNPhysicsBody(type: .dynamic, shape: nil)
-				item.physicsBody?.angularDamping = 0.9
-				item.physicsBody?.applyForce(direction, asImpulse: true)
+				item.physicsBody!.angularDamping = 0.9
+				item.physicsBody!.applyForce(direction, asImpulse: true)
 			}
 		}
 		Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
-			self.addEndText(2, "Scores: \(scores)")
+			self.addEndText(scores)
 		}
 	}
 	
-	private func addScores(_ row: Int, _ scores: Int) {
-		let text = SCNText(string: "+\(scores)", extrusionDepth: 1)
-		text.font = UIFont.systemFont(ofSize: 20)
-		let textNode = SCNNode(geometry: text)
-		
-		let material = SCNMaterial()
-		
-		material.diffuse.contents = scoresColor
-		text.materials = [material, material, material, material]
-		
-		let y = Float(row) * self.cell
-		textNode.transform = SCNMatrix4Scale(SCNMatrix4Translate(self.translate(0, 0), 5 * cell, y, 2 * cell), 0.001, 0.001, 0.001)
-		
-		let translate = CABasicAnimation(keyPath: "position.y")
-		translate.fromValue = textNode.transform.m42
-		translate.toValue = textNode.transform.m42 + cell * 4
-		translate.duration = 2
-		translate.fillMode = kCAFillModeForwards
-		translate.isRemovedOnCompletion = false
-		textNode.addAnimation(translate, forKey: nil)
-		
-		let opacity = CABasicAnimation(keyPath: "opacity")
-		opacity.fromValue = 1
-		opacity.toValue = 0
-		opacity.duration = 2
-		opacity.fillMode = kCAFillModeForwards
-		opacity.isRemovedOnCompletion = false
-		textNode.addAnimation(opacity, forKey: nil)
-		
-		self.scene.rootNode.addChildNode(textNode)
+	private func addScores(_ row: Float, _ scores: Int) {
+		let node = newNode(text("+\(scores)"), translate(5, row, 2).scale(0.001), scoresColor)
+		let y = node.position.y
+		animate(node, "position.y", from: y, to: y + cell * 4, during: 2)
+		animate(node, "opacity", from: 1, to: 0, during: 2)
+		self.scene.rootNode.addChildNode(node)
 	}
 	
-	private func addEndText(_ row: Int, _ text: String) {
-		let text = SCNText(string: text, extrusionDepth: 1)
-		text.font = UIFont.systemFont(ofSize: 20)
-		text.containerFrame = CGRect(x: 0.0, y: 0.0, width: Double(10 * cell / 0.003), height: 150)
-		text.alignmentMode = kCAAlignmentCenter
-		let textNode = SCNNode(geometry: text)
-		
-		let material = SCNMaterial()
-		material.diffuse.contents = titleColor
-		text.materials = [material, material, material, material]
-		
-		let y = Float(row) * self.cell
-		textNode.transform = SCNMatrix4Scale(SCNMatrix4Translate(self.translate(0, 0), 3 * cell, y, 0), 0.003, 0.003, 0.003)
-		self.scene.rootNode.addChildNode(textNode)
+	private func addEndText(_ scores: Int) {
+		let x = Float(config.width / 2 - 2)
+		let y = Float(config.height / 2)
+		let node = newNode(text("Scores: \(scores)"), translate(x, y).scale(0.003), titleColor)
+		self.scene.rootNode.addChildNode(node)
 	}
 	
 	private func addMarkers(_ width: Int, _ height: Int) -> SCNNode {
 		let node = SCNNode()
 		for i in 1...width + 1 {
-			node.addChildNode(addLine(0.001, CGFloat(cell * Float(height+3)), 0.001, i, 0, 0))
-			node.addChildNode(addLine(0.001, CGFloat(cell * Float(height+3)), 0.001, i, 0, 1))
+			addLine(to: node, 0.001, cell * Float(height + 3), 0.001, Float(i), 0, 0)
+			addLine(to: node, 0.001, cell * Float(height + 3), 0.001, Float(i), 0, 1)
 		}
-		for i in 0...height+3 {
-			node.addChildNode(addLine(CGFloat(cell * Float(width)), 0.001, 0.001, 1, i, 0))
-			node.addChildNode(addLine(CGFloat(cell * Float(width)), 0.001, 0.001, 1, i, 1))
+		for i in 0...height + 3 {
+			addLine(to: node, cell * Float(width), 0.001, 0.001, 1, Float(i), 0)
+			addLine(to: node, cell * Float(width), 0.001, 0.001, 1, Float(i), 1)
 		}
 		for i in 1...width + 1 {
-			for j in 0...height+3 {
-				node.addChildNode(addLine(0.001, 0.001, CGFloat(cell), i, j, 1))
+			for j in 0...height + 3 {
+				addLine(to: node, 0.001, 0.001, cell, Float(i), Float(j), 1)
 			}
 		}
 		return node
 	}
 	
+	private func text(_ string: String) -> SCNText {
+		let text = SCNText(string: string, extrusionDepth: 1)
+		text.font = UIFont.systemFont(ofSize: 20)
+		return text
+	}
+	
 	private func newBox(_ state: TetrisState, _ x: Int, _ y: Int) -> SCNNode {
-		let box = SCNBox(width: CGFloat(cell), height: CGFloat(cell), length: CGFloat(cell), chamferRadius: 0.005)
-		let node = SCNNode(geometry: box)
-		node.transform = SCNMatrix4Translate(translate(state.x, state.y), Float(x) * cell, Float(y) * cell - cell / 2, 0)
-		
-		let material = SCNMaterial()
-		material.diffuse.contents = colors[state.index]
-		box.materials = [material, material, material, material, material, material]
-		return node
+		let cell = cg(self.cell)
+		let box = SCNBox(width: cell, height: cell, length: cell, chamferRadius: 0.005)
+		let matrix = translate(Float(state.x + x), Float(state.y + y) - 0.5)
+		return newNode(box, matrix, colors[state.index])
 	}
 	
-	private func addLine(_ w: CGFloat, _ h: CGFloat, _ l: CGFloat, _ x: Int, _ y: Int, _ z: Int) -> SCNNode {
-		let box = SCNBox(width: w, height: h, length: l, chamferRadius: 0)
-		let node = SCNNode(geometry: box)
-		
-		let material = SCNMaterial()
-		material.diffuse.contents = wellColor
-		material.transparency = 0.3
-		box.materials = [material, material, material, material, material, material, material, material]
-		
-		// SCNPlanes are vertically oriented in their local coordinate space.
-		// Rotate it to match the horizontal orientation of the ARPlaneAnchor.
-		let shift = cell / Float(2)
-		node.transform = SCNMatrix4Translate(translate(0, 0), cell * Float(x) + Float(w / CGFloat(2)) - shift, cell * Float(y) + Float(h / CGFloat(2)), cell * Float(z) + Float(-l / CGFloat(2)) - shift)
-		
-		// ARKit owns the node corresponding to the anchor, so make the plane a child node.
-		return node
-	}
-	
-	private func addMarker(_ x: Int, _ y: Int) {
-		let plane = SCNPlane(width: 0.045, height: 0.045)
-		let planeNode = SCNNode(geometry: plane)
-		
-		let material = SCNMaterial()
-		material.diffuse.contents = UIColor.gray
-		material.transparency = 0.3
-		plane.materials = [material, material]
-		
-		// SCNPlanes are vertically oriented in their local coordinate space.
-		// Rotate it to match the horizontal orientation of the ARPlaneAnchor.
-		let matrix = SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0)
-		planeNode.transform = SCNMatrix4Mult(matrix, translate(x, y))
-		
-		// ARKit owns the node corresponding to the anchor, so make the plane a child node.
-		scene.rootNode.addChildNode(planeNode)
+	private func addLine(to node: SCNNode, _ w: Float, _ h: Float, _ l: Float, _ x: Float, _ y: Float, _ z: Float) {
+		let line = SCNBox(width: cg(w), height: cg(h), length: cg(l), chamferRadius: 0)
+		let shift = cell / 2
+		let matrix = SCNMatrix4Translate(translate(x, y, z), w / 2 - shift, h / 2, -l / 2 - shift)
+		node.addChildNode(newNode(line, matrix, wellColor, 0.3))
 	}
 	
 	private func addFloor() {
-		let size : CGFloat = 10
-		let plane = SCNPlane(width: size, height: size)
-		let planeNode = SCNNode(geometry: plane)
-		
-		let material = SCNMaterial()
-		material.diffuse.contents = UIColor.gray
-		material.transparency = 0
-		plane.materials = [material, material]
-		
 		// SCNPlanes are vertically oriented in their local coordinate space.
-		// Rotate it to match the horizontal orientation of the ARPlaneAnchor.
-		let matrix = SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0)
-		planeNode.transform = SCNMatrix4Mult(matrix, translate(0, 0))
-		planeNode.physicsBody = SCNPhysicsBody(type: .static, shape: nil)
-		planeNode.physicsBody?.friction = 1
-		scene.rootNode.addChildNode(planeNode)
+		let matrix = SCNMatrix4Mult(SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0), translate(0, 0))
+		let node = newNode(SCNPlane(width: 10, height: 10), matrix, UIColor.gray, 0)
+		
+		node.physicsBody = SCNPhysicsBody(type: .static, shape: nil)
+		node.physicsBody?.friction = 1
+		scene.rootNode.addChildNode(node)
 	}
 	
-	private func translate(_ x: Int, _ y: Int) -> SCNMatrix4 {
-		return SCNMatrix4MakeTranslation(self.x + Float(x) * cell, self.y + Float(y) * cell + cell / 2, self.z)
+	private func animate(_ node: SCNNode, _ path: String, from: Any, to: Any, during: CFTimeInterval) {
+		let animation = CABasicAnimation(keyPath: path)
+		animation.fromValue = from
+		animation.toValue = to
+		animation.duration = during
+		animation.fillMode = kCAFillModeForwards
+		animation.isRemovedOnCompletion = false
+		node.addAnimation(animation, forKey: nil)
 	}
 	
+	private func newNode(_ geometry: SCNGeometry, _ matrix: SCNMatrix4, _ color: UIColor, _ transparency: CGFloat = 1) -> SCNNode {
+		let material = SCNMaterial()
+		material.diffuse.contents = color
+		material.transparency = transparency
+		geometry.firstMaterial = material
+		let node = SCNNode(geometry: geometry)
+		node.transform = matrix
+		return node
+	}
+	
+	private func translate(_ x: Float, _ y: Float, _ z: Float = 0) -> SCNMatrix4 {
+		return SCNMatrix4MakeTranslation(self.x + x * cell, self.y + y * cell, self.z + z * cell)
+	}
+	
+	private func cg(_ f: Float) -> CGFloat { return CGFloat(f) }
+	
+}
+
+extension SCNMatrix4 {
+	func scale(_ s: Float) -> SCNMatrix4 { return SCNMatrix4Scale(self, s, s, s) }
 }
