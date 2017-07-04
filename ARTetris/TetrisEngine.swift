@@ -41,7 +41,7 @@ class TetrisEngine {
 			while(!well.hasCollision(current.down())) {
 				current = current.down()
 			}
-			return scene.drop(initial.y - current.y)
+			return scene.drop(from: initial, to: current)
 		}
 	}
 	
