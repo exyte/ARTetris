@@ -6,6 +6,16 @@ Click on the image below and check out the app demo:
 
 <a href="https://youtu.be/DzYkvbS1nDE" target="_blank"><img src="http://i.imgur.com/BXi949y.jpg" width="600"></a>
 
+# FAQ
+
+> App crashes when running on iPhone 6, iPhone 5s, iPad Air, etc.
+
+ARKit only works on devices with A9 chip or greater. So you need at least iPhone 6S or iPad with such a chip.
+
+> App runs, but nothing happens.
+
+To play the game you need to find some horizontal surface: floor, table top, etc. Point you camera to a plane and move your device a little bit in different directions to force ARKit to find bounds of the plane. Once it will be found, you will see Tetris well on this plane.
+
 # Source Code Guide
 
 * [ViewController](/ARTetris/ViewController.swift)
