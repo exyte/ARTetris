@@ -82,13 +82,13 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 		swiftUp.direction = .up
 		self.view.addGestureRecognizer(swiftUp)
         
-        let swiftLeft = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(sender:)))
-        swiftLeft.direction = .left
-        self.view.addGestureRecognizer(swiftLeft)
+		let swiftLeft = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(sender:)))
+		swiftLeft.direction = .left
+		self.view.addGestureRecognizer(swiftLeft)
         
-        let swiftRight = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(sender:)))
-        swiftRight.direction = .right
-        self.view.addGestureRecognizer(swiftRight)
+		let swiftRight = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(sender:)))
+		swiftRight.direction = .right
+		self.view.addGestureRecognizer(swiftRight)
 		
 		let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(sender:)))
 		self.view.addGestureRecognizer(tap)
