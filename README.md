@@ -1,9 +1,9 @@
 <img src="https://github.com/exyte/ARTetris/blob/master/header.png">
-<img align="right" src="https://github.com/exyte/ARTetris/blob/master/demo.gif" width="480" height="360" />
+<img align="right" src="https://raw.githubusercontent.com/exyte/ARTetris/master/demo.gif" width="480" />
 
 <p><h1 align="left">ARTetris</h1></p>
 
-<p><h4>Augmented Reality Tetris made with ARKit and SceneKit</a></h4></p>
+<p><h4>Augmented Reality Tetris made with ARKit and SceneKit</h4></p>
 
 ___
 
