@@ -1,10 +1,20 @@
-# ARTetris
-Augmented Reality Tetris made with ARKit and SceneKit.
+<img src="https://github.com/exyte/ARTetris/blob/master/header.png">
+<img align="right" src="https://github.com/exyte/ARTetris/blob/master/demo.gif" width="480" height="360" />
 
-# Demo
-Click on the image below and check out the app demo:
+<p><h1 align="left">ARTetris</h1></p>
 
-<a href="https://youtu.be/DzYkvbS1nDE" target="_blank"><img src="http://i.imgur.com/BXi949y.jpg" width="600"></a>
+<p><h4>Augmented Reality Tetris made with ARKit and SceneKit</a></h4></p>
+
+___
+
+<p> We are a development agency building
+  <a href="https://clutch.co/profile/exyte#review-731233">phenomenal</a> apps.</p>
+
+</br>
+
+<a href="https://exyte.com/contacts"><img src="https://i.imgur.com/vGjsQPt.png" width="134" height="34"></a> <a href="https://twitter.com/exyteHQ"><img src="https://i.imgur.com/DngwSn1.png" width="165" height="34"></a>
+
+</br>
 
 # FAQ
 
@@ -37,11 +47,3 @@ To play the game you need to find some horizontal surface: floor, table top, etc
   * Animate [removal](/ARTetris/TetrisScene.swift#L74) of filled lines from scene
   * [Drop down](/ARTetris/TetrisScene.swift#L108) current tetromino
   * [Break up](/ARTetris/TetrisScene.swift#L117) blocks after game over using SceneKit physics
-
-## Author
-
-This project is maintained by [exyte](http://exyte.com). We design and build mobile and VR/AR applications.
-
-## License
-
-ARTetris is available under the MIT license. See the LICENSE file for more info.
