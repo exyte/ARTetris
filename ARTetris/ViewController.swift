@@ -81,19 +81,36 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 		let swiftUp = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(sender:)))
 		swiftUp.direction = .up
 		self.view.addGestureRecognizer(swiftUp)
+        
+		let swiftLeft = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(sender:)))
+		swiftLeft.direction = .left
+		self.view.addGestureRecognizer(swiftLeft)
+        
+		let swiftRight = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(sender:)))
+		swiftRight.direction = .right
+		self.view.addGestureRecognizer(swiftRight)
 		
 		let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(sender:)))
 		self.view.addGestureRecognizer(tap)
 	}
 	
 	@objc private func handleSwipe(sender: UISwipeGestureRecognizer) {
-		if (sender.direction == .down) {
-			// drop down tetromino on swipe down
-			tetris?.drop()
-		} else {
-			// rotate tetromino on swipe up
-			tetris?.rotate()
-		}
+        switch sender.direction {
+        case .down:
+            // drop down tetromino on swipe down
+            tetris?.drop()
+        case .up:
+            // rotate tetromino on swipe up
+            tetris?.rotate()
+        case .left:
+            // move tetromino left on swipe left
+            tetris?.left()
+        case .right:
+            // move tetromino right on right left
+            tetris?.right()
+        default:
+            break
+        }
 	}
 	
 	@objc private func handleTap(sender: UITapGestureRecognizer) {
